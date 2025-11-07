@@ -18,7 +18,8 @@ const httpServer = http.createServer(app); // Create HTTP server
 // Initialize Socket.io
 const io = new Server(httpServer, {
   cors: {
-    origin: "http://localhost:3000", // Your frontend URL
+    // --- THIS IS THE FIX ---
+    origin: "https://exquisite-pithivier-76ddbd.netlify.app", // Your frontend URL
     methods: ["GET", "POST", "PUT", "DELETE"],
   },
 });
