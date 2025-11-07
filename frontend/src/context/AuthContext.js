@@ -1,4 +1,5 @@
-import React, { createContext, useState, useEffect } from "react";
+// Add 'useCallback' to the import
+import React, { createContext, useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 
@@ -12,6 +13,18 @@ export const AuthProvider = ({ children }) => {
   );
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+
+  // --- FIX 1: Wrap 'logout' in useCallback ---
+  // This function depends on 'navigate', so we add it to the array.
+  const logout = useCallback(() => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("userType");
+    setToken(null);
+    setUser(null);
+    setUserType(null);
+    navigate("/");
+  }, [navigate]);
+  // --- END FIX 1 ---
 
   useEffect(() => {
     // Try to load user info from token on app load
@@ -31,14 +44,16 @@ export const AuthProvider = ({ children }) => {
           }
         } catch (error) {
           console.error("Failed to load user profile", error);
-          logout(); // Invalid token
+          logout(); // This call requires 'logout' in the dependency array
         }
       }
       setLoading(false);
     };
 
     loadUser();
-  }, [token, userType]);
+    // --- FIX 2: Add 'logout' to the dependency array ---
+  }, [token, userType, logout]);
+  // --- END FIX 2 ---
 
   const login = async (credentials, type) => {
     try {
@@ -84,15 +99,6 @@ export const AuthProvider = ({ children }) => {
       console.error("Sign-in failed:", error.response.data.message);
       throw error; // Re-throw to be caught in the component
     }
-  };
-
-  const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("userType");
-    setToken(null);
-    setUser(null);
-    setUserType(null);
-    navigate("/");
   };
 
   return (

@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+// Add 'useCallback' to the import
+import React, { useState, useEffect, useCallback } from "react";
 import api from "../../services/api";
 import DoctorCard from "../../components/DoctorCard";
 import "./BookAppointment.css"; // We'll create this file
@@ -13,11 +14,10 @@ const BookAppointment = () => {
   const [rating, setRating] = useState("");
   const [location, setLocation] = useState("");
 
-  useEffect(() => {
-    fetchDoctors();
-  }, []); // Fetch all on initial load
-
-  const fetchDoctors = async () => {
+  // --- FIX 1: Move fetchDoctors up and wrap in useCallback ---
+  // This function depends on the filters, so we add them to the array.
+  // This makes the function "stable" - it only changes if the filters change.
+  const fetchDoctors = useCallback(async () => {
     setLoading(true);
     setError("");
     try {
@@ -33,26 +33,34 @@ const BookAppointment = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [searchTerm, rating, location]); // Dependencies for the function
+  // --- END FIX 1 ---
+
+  useEffect(() => {
+    // --- FIX 2: Add the stable 'fetchDoctors' to the array ---
+    // Now, this effect will run on mount AND whenever the filters change.
+    fetchDoctors();
+  }, [fetchDoctors]);
+  // --- END FIX 2 ---
 
   const handleFilterSubmit = (e) => {
     e.preventDefault();
-    fetchDoctors();
+    // This function is no longer needed, as the page is now reactive.
+    // The useEffect above handles fetching when filters change.
   };
 
   const clearFilters = () => {
     setSearchTerm("");
     setRating("");
     setLocation("");
-    // Re-fetch all doctors
-    fetchDoctors();
+    // We no longer need to call fetchDoctors() here.
+    // When the state updates, the useEffect will run automatically.
   };
-
 
   return (
     <div className="book-appointment-container">
       <h2>Book an Appointment</h2>
-      
+
       <form onSubmit={handleFilterSubmit} className="filter-form">
         <input
           type="text"
@@ -72,8 +80,11 @@ const BookAppointment = () => {
           <option value="4">4+ Stars</option>
           <option value="3">3+ Stars</option>
         </select>
+        {/* This button no longer does anything, but we can keep it */}
         <button type="submit">Search</button>
-        <button type="button" onClick={clearFilters}>Clear Filters</button>
+        <button type="button" onClick={clearFilters}>
+          Clear Filters
+        </button>
       </form>
 
       <div className="doctor-list">
