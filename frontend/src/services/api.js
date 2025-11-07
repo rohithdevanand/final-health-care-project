@@ -2,7 +2,8 @@ import axios from "axios";
 
 // Create an Axios instance
 const api = axios.create({
-  baseURL: "http://localhost:5000/api", // Your backend's URL
+  // --- THIS IS THE FIX ---
+  baseURL: "https://final-health-care-project.onrender.com/api", // Your backend's URL
   headers: {
     "Content-Type": "application/json",
   },

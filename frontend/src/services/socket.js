@@ -1,7 +1,8 @@
 import { io } from "socket.io-client";
 
 // Connect to the backend server
-const URL = "http://localhost:5000";
+// --- THIS IS THE FIX ---
+const URL = "https://final-health-care-project.onrender.com";
 const socket = io(URL, {
   autoConnect: false, // Only connect when needed
 });
